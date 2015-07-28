@@ -3,6 +3,17 @@
 from subprocess import Popen, PIPE
 import re
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 SUSPICIOUS_FILENAME_EXTENSIONS = (
     b'rsa', b'dsa', b'.private_key', b'.psql_history', b'.mysql_history',
     b'.pem', b'.log', b'.htpasswd', b'.key', b'tblk',
@@ -22,32 +33,41 @@ SUSPICIOUS_CREDENTIALS = set(
 )
 
 def run():
-    check_filenames()
-    check_code_diff()
-
-def check_code_diff():
+    check_files()
+ 
+def check_code_diff(filename):
     '''
     Check possible credentials for all newly added code lines
     '''
-    added_code = Popen(["git", "diff", "--cached"], stdout=PIPE)
+    added_code = Popen(["git", "diff", "--cached", "--", filename], stdout=PIPE)
+    has_credential = False
     for code in added_code.stdout.readlines():
         code = code.strip()
         if code.startswith('+'):
             if any(regex.match(code) for regex in SUSPICIOUS_CREDENTIALS):
-                print('Found possible credentials: {}'.format(code))
-                exit(1)
+                print(
+                    'Found possible credentials on line: {blue}{line}{end} for file {blue}{file}{end}'
+                    .format(line=code, file=filename, blue=bcolors.OKBLUE, end=bcolors.ENDC))
+                has_credential = True
+    return has_credential 
 
-def check_filenames():
+def check_files():
     '''
     Check all filenames if they have suspicious format
     '''
+    has_credential = False
     filenames = Popen(["git", "diff", "--cached", "--name-only"], stdout=PIPE)
     for name in filenames.stdout.readlines():
         name = name.strip()
         if name.endswith(SUSPICIOUS_FILENAME_EXTENSIONS)\
                 or any(keyword in name for keyword in SUSPICIOUS_FILENAME_KEYWORDS):
-            print('filename {} has suspicious format'.format(name))
-            exit(1)
+            print('filename {blue}{file}{end} has suspicious format'
+                  .format(blue=bcolors.OKBLUE, end=bcolors.ENDC, file=name))
+            has_credential = True
+        if check_code_diff(name):
+            has_credential = True
+    if has_credential:
+        exit(1)
 
 
 run()
