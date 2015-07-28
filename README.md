@@ -1,1 +1,12 @@
-Git hooks that can be added to gdc services for code validation
+# Git Templates
+Git templates that can be used as git configuration template for gdc projects. 
+
+## Available configs
+- Git hooks
+  - security scanning pre-commit hook: Check possible sensitive information that's in the commit message or newly added code. If you think the detected line is a false positive. You can run it as `git commit -n` to skip it.
+  - commit-message hook according to [angular guidelines](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#).
+
+
+## Setup git templates
+- Clone this directory, then run `git config --global init.templatedir $template_dir`. Afterward new repositories will use this directory for templates.
+- For existing directory, run  `git init --template $template_dit` to reinitiate it.
