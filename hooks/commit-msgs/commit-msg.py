@@ -13,6 +13,12 @@ import re
 import sys, os
 from subprocess import call
 
+
+# Python 2.x / 3.x compability.
+try: input = raw_input
+except NameError:
+    pass
+
 valid_commit_types = ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore']
 help_address = 'https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#'
 
@@ -78,7 +84,7 @@ while True:
                 commit_fd.write('#! %s\n' % (error,))
 
     if errors:
-        re_edit = raw_input('Invalid git commit message format.  Press y to edit and n to cancel the commit. [Y/n]: ')
+        re_edit = input('Invalid git commit message format.  Press y to edit and n to cancel the commit. [Y/n]: ')
         if re_edit.lower() in ('n','no'):
             sys.exit(1)
         call('%s %s' % (editor, message_file), shell=True)
