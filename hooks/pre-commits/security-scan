@@ -2,6 +2,10 @@
 
 from subprocess import Popen, PIPE
 import re
+import sys
+
+sys.stdin = open('/dev/tty')
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -67,6 +71,9 @@ def check_files():
         if check_code_diff(name):
             has_credential = True
     if has_credential:
+        re_edit = raw_input('Found possible credentials.  Press y to ignore and n to cancel the commit. [y/N]: ')
+        if re_edit.lower() in ['y', 'yes']:
+            exit(0)
         exit(1)
 
 
