@@ -10,3 +10,8 @@ Git templates that can be used as git configuration template for gdc projects.
 ## Setup git templates
 - Clone this directory, then run `git config --global init.templatedir $template_dir`. Afterward new repositories will use this directory for templates.
 - For existing directory, run  `git init --template $template_dir` to reinitiate it.
+
+
+## Contributing
+
+Read how to contribute [here](https://github.com/NCI-GDC/gdcapi/blob/master/CONTRIBUTING.md)
