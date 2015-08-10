@@ -19,12 +19,12 @@ class bcolors:
 
 
 SUSPICIOUS_FILENAME_EXTENSIONS = (
-    b'rsa', b'dsa', b'.private_key', b'.psql_history', b'.mysql_history',
-    b'.pem', b'.log', b'.htpasswd', b'.key', b'tblk',
+    'rsa', 'dsa', '.private_key', '.psql_history', '.mysql_history',
+    '.pem', '.log', '.htpasswd', '.key', 'tblk',
 )
 
 SUSPICIOUS_FILENAME_KEYWORDS = (
-    b'opvn', b'keychain', b'password', b'backup', b'tblk', b'credentials',
+    'opvn', 'keychain', 'password', 'backup', 'tblk', 'credentials',
 )
 
 SUSPICIOUS_CREDENTIALS = set(
@@ -46,6 +46,7 @@ def check_code_diff(filename):
     added_code = Popen(["git", "diff", "--cached", "--", filename], stdout=PIPE)
     has_credential = False
     for code in added_code.stdout.readlines():
+        code = code.decode()
         code = code.strip()
         if code.startswith('+'):
             if any(regex.match(code) for regex in SUSPICIOUS_CREDENTIALS):
@@ -62,6 +63,7 @@ def check_files():
     has_credential = False
     filenames = Popen(["git", "diff", "--cached", "--name-only"], stdout=PIPE)
     for name in filenames.stdout.readlines():
+        name = name.decode()
         name = name.strip()
         if name.endswith(SUSPICIOUS_FILENAME_EXTENSIONS)\
                 or any(keyword in name for keyword in SUSPICIOUS_FILENAME_KEYWORDS):
