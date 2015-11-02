@@ -3,6 +3,7 @@
 from subprocess import Popen, PIPE
 import re
 import sys
+from exceptions import UnicodeDecodeError
 
 sys.stdin = open('/dev/tty')
 
@@ -46,7 +47,10 @@ def check_code_diff(filename):
     added_code = Popen(["git", "diff", "--cached", "--", filename], stdout=PIPE)
     has_credential = False
     for code in added_code.stdout.readlines():
-        code = code.decode()
+        try:
+            code = code.decode()
+        except UnicodeDecodeError:
+            pass
         code = code.strip()
         if code.startswith('+'):
             if any(regex.match(code) for regex in SUSPICIOUS_CREDENTIALS):
