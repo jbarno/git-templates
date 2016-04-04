@@ -2,6 +2,11 @@
 
 from subprocess import Popen, PIPE
 import re
+import sys
+from exceptions import UnicodeDecodeError
+
+sys.stdin = open('/dev/tty')
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -42,7 +47,10 @@ def check_code_diff(filename):
     added_code = Popen(["git", "diff", "--cached", "--", filename], stdout=PIPE)
     has_credential = False
     for code in added_code.stdout.readlines():
-        code = code.decode()
+        try:
+            code = code.decode()
+        except UnicodeDecodeError:
+            pass
         code = code.strip()
         if code.startswith('+'):
             if any(regex.match(code) for regex in SUSPICIOUS_CREDENTIALS):
@@ -69,6 +77,9 @@ def check_files():
         if check_code_diff(name):
             has_credential = True
     if has_credential:
+        re_edit = raw_input('Found possible credentials.  Press y to ignore and n to cancel the commit. [y/N]: ')
+        if re_edit.lower() in ['y', 'yes']:
+            exit(0)
         exit(1)
 
 
