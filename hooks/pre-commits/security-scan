@@ -3,7 +3,10 @@
 from subprocess import Popen, PIPE
 import re
 import sys
-from exceptions import UnicodeDecodeError
+try:
+    from exceptions import UnicodeDecodeError
+except:
+    pass
 
 sys.stdin = open('/dev/tty')
 
@@ -30,21 +33,24 @@ SUSPICIOUS_FILENAME_KEYWORDS = (
 
 SUSPICIOUS_CREDENTIALS = set(
     [re.compile(regex, flags=re.IGNORECASE) for regex in [
-        '[\w]{40}', # aws secret key
-        '.*PRIVATE KEY.*', # rsa, ssl keys
-        '.*password.*', # literal 'password'
-        '.*phs[\d]{6}.*', # phsids
+        '[\w]{40}',  # aws secret key
+        '.*PRIVATE KEY.*',  # rsa, ssl keys
+        '.*password.*',  # literal 'password'
+        '.*phs[\d]{6}.*',  # phsids
     ]]
 )
 
+
 def run():
     check_files()
- 
+
+
 def check_code_diff(filename):
     '''
     Check possible credentials for all newly added code lines
     '''
-    added_code = Popen(["git", "diff", "--cached", "--", filename], stdout=PIPE)
+    added_code = Popen(
+        ["git", "diff", "--cached", "--", filename], stdout=PIPE)
     has_credential = False
     for code in added_code.stdout.readlines():
         try:
@@ -55,10 +61,13 @@ def check_code_diff(filename):
         if code.startswith('+'):
             if any(regex.match(code) for regex in SUSPICIOUS_CREDENTIALS):
                 print(
-                    'Found possible credentials on line: {blue}{line}{end} for file {blue}{file}{end}'
-                    .format(line=code, file=filename, blue=bcolors.OKBLUE, end=bcolors.ENDC))
+                    'Found possible credentials on line: '
+                    '{blue}{line}{end} for file {blue}{file}{end}'
+                    .format(line=code, file=filename,
+                            blue=bcolors.OKBLUE, end=bcolors.ENDC))
                 has_credential = True
-    return has_credential 
+    return has_credential
+
 
 def check_files():
     '''
@@ -69,15 +78,18 @@ def check_files():
     for name in filenames.stdout.readlines():
         name = name.decode()
         name = name.strip()
-        if name.endswith(SUSPICIOUS_FILENAME_EXTENSIONS)\
-                or any(keyword in name for keyword in SUSPICIOUS_FILENAME_KEYWORDS):
+        if (name.endswith(SUSPICIOUS_FILENAME_EXTENSIONS)
+            or any(keyword in name for keyword in
+                   SUSPICIOUS_FILENAME_KEYWORDS)):
             print('filename {blue}{file}{end} has suspicious format'
                   .format(blue=bcolors.OKBLUE, end=bcolors.ENDC, file=name))
             has_credential = True
         if check_code_diff(name):
             has_credential = True
     if has_credential:
-        re_edit = raw_input('Found possible credentials.  Press y to ignore and n to cancel the commit. [y/N]: ')
+        re_edit = raw_input(
+            'Found possible credentials.  '
+            'Press y to ignore and n to cancel the commit. [y/N]: ')
         if re_edit.lower() in ['y', 'yes']:
             exit(0)
         exit(1)
