@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 directory=$(dirname "${BASH_SOURCE}")
 for script in $directory/pre-commits/*;
     do $script
