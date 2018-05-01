@@ -34,6 +34,10 @@ SUSPICIOUS_FILENAME_KEYWORDS = (
 SUSPICIOUS_CREDENTIALS = set(
     [re.compile(regex, flags=re.IGNORECASE) for regex in [
         '[\w]{40}',  # aws secret key
+        '.*aws_secret.*',  # aws secret key
+        'client_secret',  # oauth client secret
+        'api_key',  # google api key
+        'secret_key',  # literal secret key
         '.*PRIVATE KEY.*',  # rsa, ssl keys
         '.*password.*',  # literal 'password'
         '.*phs[\d]{6}.*',  # phsids
