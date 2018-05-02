@@ -3,6 +3,8 @@
 from subprocess import Popen, PIPE
 import re
 import sys
+import random
+import string
 try:
     from exceptions import UnicodeDecodeError
 except:
@@ -32,11 +34,12 @@ SUSPICIOUS_FILENAME_KEYWORDS = (
 )
 
 SUSPICIOUS_CREDENTIALS = set(
-    [re.compile(regex, flags=re.IGNORECASE) for regex in [
-        '[\w]{40}',  # aws secret key
+    [re.compile(regex) for regex in [
+        '(?<![A-Za-z0-9/=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])',  # aws secret key
+        '(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])', # aws access key
         '.*PRIVATE KEY.*',  # rsa, ssl keys
         '.*password.*',  # literal 'password'
-        '.*phs[\d]{6}.*',  # phsids
+        'phs[\d]{6}',  # phsids
     ]]
 )
 
@@ -59,7 +62,7 @@ def check_code_diff(filename):
             pass
         code = code.strip()
         if code.startswith('+'):
-            if any(regex.match(code) for regex in SUSPICIOUS_CREDENTIALS):
+            if any(regex.search(code) for regex in SUSPICIOUS_CREDENTIALS):
                 print(
                     'Found possible credentials on line: '
                     '{blue}{line}{end} for file {blue}{file}{end}'
@@ -87,10 +90,10 @@ def check_files():
         if check_code_diff(name):
             has_credential = True
     if has_credential:
+        want_string = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(5))
         re_edit = raw_input(
-            'Found possible credentials.  '
-            'Press y to ignore and n to cancel the commit. [y/N]: ')
-        if re_edit.lower() in ['y', 'yes']:
+            'Type "' + want_string + '" to ignore or n to cancel the commit. [n]: ')
+        if re_edit.lower() == want_string:
             exit(0)
         exit(1)
 
