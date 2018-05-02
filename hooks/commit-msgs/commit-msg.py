@@ -40,8 +40,8 @@ def header_check(real_lineno, line):
     if commit_type not in valid_commit_types:
         return "Line %d: Commit type not valid. Must be one of:\n#! %s" % (real_lineno,", ".join(valid_commit_types))
 
-    if len(line) > 50:
-        return "Line %d: First line should be less than 50 characters in length. (is %d)" % (real_lineno, len(line))
+    #if len(line) > 50:
+    #    return "Line %d: First line should be less than 50 characters in length. (is %d)" % (real_lineno, len(line))
 
 
 def check_format_rules(lineno, line):
@@ -53,8 +53,8 @@ def check_format_rules(lineno, line):
     if lineno == 1 and line:
         return "Line %d: Second line should be empty." % (real_lineno,)
 
-    if not line.startswith('#') and len(line) > 72:
-        return "Line %d: No line should be over 72 characters long. (is %d)" % (real_lineno,len(line))
+    #if not line.startswith('#') and len(line) > 72:
+    #    return "Line %d: No line should be over 72 characters long. (is %d)" % (real_lineno,len(line))
 
     return False
 
@@ -71,6 +71,9 @@ while True:
                 e = check_format_rules(lineno, stripped_line)
                 if e:
                     errors.append(e)
+
+    if commit_msg[0] == '\n':
+        sys.exit(1) # User cancelled this commit
 
     with open(message_file, 'w') as commit_fd:
         for line in commit_msg:
