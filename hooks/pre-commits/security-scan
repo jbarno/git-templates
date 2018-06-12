@@ -10,6 +10,12 @@ try:
 except:
     pass
 
+# Python 2.x / 3.x compability.
+try:
+    input = raw_input
+except NameError:
+    pass
+
 sys.stdin = open('/dev/tty')
 
 
@@ -95,7 +101,7 @@ def check_files():
             has_credential = True
     if has_credential:
         want_string = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(5))
-        re_edit = raw_input(
+        re_edit = input(
             'Type "' + want_string + '" to ignore or n to cancel the commit. [n]: ')
         if re_edit.lower() == want_string:
             exit(0)
